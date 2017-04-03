@@ -112,6 +112,7 @@ def runItAll(suffixlength=suffixlength):
         members = combination[1]
         
         # Ignore the first num, as there is nothing to compare
+        # Find intersecting members, add them to lstAllDoubles
         if num>0:
             if prevgroupNameShort == groupNameShort:
                 intersection = list(set.intersection(set(members),set(prevmembers)))
