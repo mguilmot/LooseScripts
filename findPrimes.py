@@ -17,7 +17,7 @@ def find_deviders(number):
                 return 2
     return count
 
-def find_primes(number):
+def find_primes(number,start=0):
     '''
         Generator, checking if a number is prime.
         If so, return it.
@@ -28,11 +28,11 @@ def find_primes(number):
         return "Error. Number should be type INT"
 
     passcheck=[0,2,4,5,6,8]
-    for num in range(number+1):
+    for num in range(start,number+1):
         if num > 5 and int(str(num)[-1]) in passcheck:
             continue
         if find_deviders(num) < 2:
             yield num
 
-for i in find_primes(100000):
+for i in find_primes(number=1000000000,start=1000000):
     print(i)
