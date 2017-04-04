@@ -35,8 +35,8 @@ def calccompound(base=100,intrest=0.01,years=5,periodextra=0,periodtype='year'):
         for currentyear in range(years):
             base += calcextras(extra=periodextra,type=periodtype)
             base += calcintrest(base,intrest)
-        return base
+        return '{:02.2f}'.format(base)
     except:
         return ("Error: base should be INT, intrest should be FLOAT, years should be INT")
 
-print(calccompound(base=5000,intrest=0.015,years=2,periodextra=750,periodtype='month'))
+print(calccompound(base=0,intrest=0.015,years=1,periodextra=1,periodtype='month'))
