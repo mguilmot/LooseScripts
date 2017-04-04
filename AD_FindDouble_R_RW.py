@@ -19,7 +19,7 @@
         pip install https://github.com/zakird/pyad/archive/master.zip
         Documentation on pyad webpage: https://zakird.com/pyad/index.html
         
-    tested on 650 groups at once: execution time: 180 sec (0.28sec/group)
+    tested on 625 groups at once: execution time: 170 sec (0.27sec/group)
 '''
 
 ### Variables
@@ -29,7 +29,7 @@ fileName_csv = "c:\\temp\\uit.csv"      # csv output filename
 suffixlength="4"                        # Lenght of the suffix of the AD groups we will check. In our example our suffix is "-Adm" or "-Usr" == 4
 suffixRO="-Usr"                         # Suffix of the Read Only  AD groups
 suffixRW="-Adm"                         # Suffix of the Read+Write AD groups
-suffixignore=""                         # Specific suffixes to ignore
+suffixignore="-share"                   # Specific suffixes to ignore : write it lowercase!
 dictChecked={}                          # Dictionary we will use to speed things up, do not change this one
 
 ### Modules we need
