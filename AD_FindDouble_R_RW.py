@@ -116,16 +116,17 @@ def runItAll(suffixlength=suffixlength):
         if num>0:
             if prevgroupNameShort == groupNameShort:
                 intersection = list(set.intersection(set(members),set(prevmembers)))
-                if len(intersection>0):
-                    lstAllDoubles.append(([groupName,prevgroupName],lst))
+                if len(intersection)>0:
+                    lstAllDoubles.append(([groupName,prevgroupName],intersection))
         
         # Setting "previous" entries, to compare
         prevgroupName = groupName
         prevgroupNameShort = groupNameShort
         prevmembers = members
-
+        
     if len(lstAllDoubles)>0:
         # If lstAllDoubles has entries, we have doubles. Setting result accordingly
+        print('Found double entries. Check',fileName_out,'for output.')
         text = "Found double entries"
         text += "\n\n"
         for double in lstAllDoubles:
@@ -136,6 +137,7 @@ def runItAll(suffixlength=suffixlength):
                 text += "\n"
             text += "\n"
     else:
+        print("No doubles found in provided AD groups.")
         text = "No doubles found."
     
     return text
