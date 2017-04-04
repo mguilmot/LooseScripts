@@ -23,25 +23,23 @@
 '''
 
 ### Variables
-# Filenames we will use
-# Lenght of the suffix of the AD groups we will check. In our example our suffix is "-Adm" or "-Usr" == 4
-# Suffixes we will ignore, if any. If none use ""
-fileName = "c:\\temp\\in.txt"
-fileName_out = "c:\\temp\\uit.txt"
-suffixlength="4"
-suffixRO="-Usr"
-suffixRW="-Adm"
-suffixignore="-Share"
-dictChecked={}
+fileName = "c:\\temp\\in.txt"           # input filename
+fileName_out = "c:\\temp\\uit.txt"      # plain text output filename
+fileName_csv = "c:\\temp\\uit.csv"      # csv output filename
+suffixlength="4"                        # Lenght of the suffix of the AD groups we will check. In our example our suffix is "-Adm" or "-Usr" == 4
+suffixRO="-Usr"                         # Suffix of the Read Only  AD groups
+suffixRW="-Adm"                         # Suffix of the Read+Write AD groups
+suffixignore=""                         # Specific suffixes to ignore
+dictChecked={}                          # Dictionary we will use to speed things up, do not change this one
 
 ### Modules we need
 import os
 from pyad import *
 
-### Check if input file exists
+### Check if input file(s) exists
 if (os.path.isfile(fileName))==False:
     raise FileExistsError ("Make sure c:\temp\in.txt exists")
-    
+
 ### Helper functions
 def allGroups(fileName=fileName):
     '''
@@ -61,7 +59,10 @@ def allGroups(fileName=fileName):
         #lst = [line for line in outputlines(f) if not line.endswith(suffixignore)]
         #lst = sorted(lst,key=lambda x:x.split("-")[:-1])
         #return lst
-        genGroups = sorted((line for line in outputlines(f) if not line.endswith(suffixignore)),key=lambda x:x.split("-")[:-1])
+        if suffixignore == "":
+            genGroups = sorted((line for line in outputlines(f)),key=lambda x:x.split("-")[:-1])
+        else:
+            genGroups = sorted((line for line in outputlines(f) if not line.endswith(suffixignore)),key=lambda x:x.split("-")[:-1])
         for group in genGroups:
             yield group
 
@@ -173,22 +174,28 @@ def runItAll(suffixlength=suffixlength):
         prevmembers = members
         
     if len(lstAllDoubles)>0:
+        textcsv=""
         # If lstAllDoubles has entries, we have doubles. Setting result accordingly
-        print('Found double entries. Check',fileName_out,'for output.')
+        print('Found double entries. Check chosen output file(s).')
         text = "Found double entries"
         text += "\n\n"
         for double in lstAllDoubles:
             text += "Doubles for: " + str(double[0][0] + " & " + str(double[0][1]))
             text += "\n"
+            textcsv += str(double[0][0]) + "," + str(double[0][1]) + ","
             for member in double[1]:
                 text += str(member)
                 text += "\n"
+                textcsv += str(member)
+                textcsv += ","
             text += "\n"
+            textcsv += "\n"
     else:
         print("No doubles found in provided AD groups.")
         text = "No doubles found."
+        textcsv = "No doubles found"
     
-    return text
+    return (text,textcsv)
 
 '''
 Check for doubles, output to file
@@ -196,7 +203,16 @@ Check for doubles, output to file
 import time
 start_time = time.time()
 
-with open(fileName_out,"w") as f:
-    f.write(runItAll())
+run = runItAll()
+
+text,textcsv = run[0],run[1]
+
+if fileName_csv != "":
+    with open(fileName_csv,"w") as f:
+        f.write(textcsv)
+
+if fileName_out != "":
+    with open(fileName_out,"w") as f:
+        f.write(text)
 
 print("--- %s seconds ---" % (time.time() - start_time))
