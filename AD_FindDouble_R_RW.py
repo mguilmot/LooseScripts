@@ -18,6 +18,8 @@
     pyad by Zakir Durumeric:
         pip install https://github.com/zakird/pyad/archive/master.zip
         Documentation on pyad webpage: https://zakird.com/pyad/index.html
+        
+    tested on 650 groups at once: execution time: 180 sec (0.28sec/group)
 '''
 
 ### Variables
@@ -27,7 +29,10 @@
 fileName = "c:\\temp\\in.txt"
 fileName_out = "c:\\temp\\uit.txt"
 suffixlength="4"
+suffixRO="-Usr"
+suffixRW="-Adm"
 suffixignore="-Share"
+dictChecked={}
 
 ### Modules we need
 import os
@@ -40,8 +45,11 @@ if (os.path.isfile(fileName))==False:
 ### Helper functions
 def allGroups(fileName=fileName):
     '''
-    Getting all the AD groups, sorted, in a list
+    Generator, getting all the AD groups, sorted, returning them 1 by 1
     '''
+    
+    print("Reading input file",fileName)
+    
     def outputlines(f):
         for line in f:
             if line.startswith("#") or len(line)<2:
@@ -50,22 +58,54 @@ def allGroups(fileName=fileName):
                 yield line.strip("\n")
 
     with open(fileName) as f:
-        lst = [line for line in outputlines(f) if not line.endswith(suffixignore)]
-        lst = sorted(lst,key=lambda x:x.split("-")[:-1])
-        return lst
+        #lst = [line for line in outputlines(f) if not line.endswith(suffixignore)]
+        #lst = sorted(lst,key=lambda x:x.split("-")[:-1])
+        #return lst
+        genGroups = sorted((line for line in outputlines(f) if not line.endswith(suffixignore)),key=lambda x:x.split("-")[:-1])
+        for group in genGroups:
+            yield group
 
-def getMembers(groupName):
+def getMembers(groupName,suffixRO=suffixRO,suffixRW=suffixRW,dictChecked=dictChecked):
     '''
     Getting all the members of our AD groups, in a list. Returns an error if group does not exist
+    Checks if "other" group was already checked. If so, and empty: skip it. Should speed up things.
     '''
-    try:
-        GN = pyad.adgroup.ADGroup.from_cn(groupName)
-        members = pyad.adgroup.ADGroup.get_members(GN,recursive=False, ignoreGroups=False)
-        return [str(member).split(",")[0][12:] for member in members]
-    except:
-        # Group does not exist
-        return ["_Error_"]
 
+    print("Getting members from",groupName)
+    
+    suffixes=[suffixRO,suffixRW]
+    groupNameShort = groupName[:-int(suffixlength)]
+    groupNameSuffix = groupName[-int(suffixlength):]
+    
+    def findMembers(groupName,groupNameShort=groupNameShort):
+        try:
+            GN = pyad.adgroup.ADGroup.from_cn(groupName)
+            members = pyad.adgroup.ADGroup.get_members(GN,recursive=False, ignoreGroups=False)
+            result = [str(member).split(",")[0][12:] for member in members]
+            dictChecked[groupNameShort] = len(result)
+            return result
+        except:
+            # Group does not exist
+            return ["_Error_"]    
+    
+    if groupNameShort + suffixes[0] == groupName:
+        other = groupNameShort + suffixes[0]
+    else:
+        other = groupNameShort + suffixes[1]
+    
+    if groupNameShort in dictChecked:
+        if dictChecked[groupNameShort]>0:
+            # found. Not empty. Adding
+            members = findMembers(groupName)
+            return members
+        else:
+            # found. Empty. Skipping
+            return []
+    else:
+        # not found. Adding
+        members = findMembers(groupName)
+        return members
+    
 def combineGroupMembers(groupName):
     '''
     Combining all AD groups and their members, in a tuple, in format:
@@ -83,12 +123,17 @@ def combineGroupMembers(groupName):
   
 def allCombinations(allGroups):
     '''
-    Returning all the combinations as a list, stripped from error entries
+    Generator returning all the combinations 1 by 1
     '''
+    
+    print("Generating information about groups.")
+    
     lst=[combineGroupMembers(groupName) for groupName in allGroups]
     while ('_Error_', '_Error_') in lst:
         lst.remove(("_Error_", "_Error_"))
-    return lst
+    #return lst
+    for combination in lst:
+        yield combination
 
 def runItAll(suffixlength=suffixlength):
     '''
@@ -105,6 +150,8 @@ def runItAll(suffixlength=suffixlength):
     '''
     lstAllDoubles = []
     
+    print("Starting.")
+    
     for num,combination in enumerate(allCombinations(allGroups())):
         # combination = (groupname,[members])
         groupNameShort = combination[0][:-int(suffixlength)]
@@ -115,6 +162,7 @@ def runItAll(suffixlength=suffixlength):
         # Find intersecting members, add them to lstAllDoubles
         if num>0:
             if prevgroupNameShort == groupNameShort:
+                print("Comparing", prevgroupName,"with",groupName)
                 intersection = list(set.intersection(set(members),set(prevmembers)))
                 if len(intersection)>0:
                     lstAllDoubles.append(([groupName,prevgroupName],intersection))
@@ -145,7 +193,10 @@ def runItAll(suffixlength=suffixlength):
 '''
 Check for doubles, output to file
 '''
+import time
+start_time = time.time()
+
 with open(fileName_out,"w") as f:
     f.write(runItAll())
 
-
+print("--- %s seconds ---" % (time.time() - start_time))
