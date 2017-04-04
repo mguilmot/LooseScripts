@@ -114,13 +114,12 @@ def combineGroupMembers(groupName):
     ''' 
     members = getMembers(groupName)
     if len(members)==0:
-        result = (groupName,[])
+        return (groupName,[])
     else:
         if members[0] != "_Error_":
-            result = (groupName,members)
+            return (groupName,members)
         else:
-            result = ("_Error_","_Error_")
-    return result
+            return ("_Error_","_Error_")
   
 def allCombinations(allGroups):
     '''
@@ -134,6 +133,7 @@ def allCombinations(allGroups):
         lst.remove(("_Error_", "_Error_"))
     #return lst
     for combination in lst:
+        print(combination)
         yield combination
 
 def runItAll(suffixlength=suffixlength):
