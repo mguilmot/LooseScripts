@@ -33,7 +33,7 @@ suffixignore=""                         # Specific suffixes to ignore
 dictChecked={}                          # Dictionary we will use to speed things up, do not change this one
 
 ### Modules we need
-import os
+import os, string
 from pyad import *
 
 ### Check if input file(s) exists
@@ -53,7 +53,7 @@ def allGroups(fileName=fileName):
             if line.startswith("#") or len(line)<2:
                 continue
             else:
-                yield line.strip("\n")
+                yield line.strip("\n").lower()
 
     with open(fileName) as f:
         #lst = [line for line in outputlines(f) if not line.endswith(suffixignore)]
@@ -72,7 +72,7 @@ def getMembers(groupName,suffixRO=suffixRO,suffixRW=suffixRW,dictChecked=dictChe
     Checks if "other" group was already checked. If so, and empty: skip it. Should speed up things.
     '''
 
-    print("Getting members from",groupName)
+    print("Getting members for AD group:",groupName)
     
     suffixes=[suffixRO,suffixRW]
     groupNameShort = groupName[:-int(suffixlength)]
@@ -128,13 +128,13 @@ def allCombinations(allGroups):
     
     print("Generating information about groups.")
     
-    lst=[combineGroupMembers(groupName) for groupName in allGroups]
-    while ('_Error_', '_Error_') in lst:
-        lst.remove(("_Error_", "_Error_"))
-    #return lst
+    lst=(combineGroupMembers(groupName) for groupName in allGroups)
     for combination in lst:
-        print(combination)
-        yield combination
+        # If error or empty, we shouldn't be evaluating
+        if combination == ("_Error_","_Error_") or combination[1]==[]:
+            continue
+        else:
+            yield combination
 
 def runItAll(suffixlength=suffixlength):
     '''
@@ -176,7 +176,9 @@ def runItAll(suffixlength=suffixlength):
     if len(lstAllDoubles)>0:
         textcsv=""
         # If lstAllDoubles has entries, we have doubles. Setting result accordingly
+        print()
         print('Found double entries. Check chosen output file(s).')
+        print()
         text = "Found double entries"
         text += "\n\n"
         for double in lstAllDoubles:
