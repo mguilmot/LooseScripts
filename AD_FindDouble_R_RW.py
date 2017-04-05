@@ -50,19 +50,14 @@ def allGroups(fileName=fileName):
     
     def outputlines(f):
         for line in f:
-            if line.startswith("#") or len(line)<2:
+            newline = line.lower().strip("\n")
+            if (newline.startswith("#") or len(newline)<2) or (suffixignore != "" and newline.endswith(suffixignore)):
                 continue
             else:
-                yield line.strip("\n").lower()
+                yield newline
 
     with open(fileName) as f:
-        #lst = [line for line in outputlines(f) if not line.endswith(suffixignore)]
-        #lst = sorted(lst,key=lambda x:x.split("-")[:-1])
-        #return lst
-        if suffixignore == "":
-            genGroups = sorted((line for line in outputlines(f)),key=lambda x:x.split("-")[:-1])
-        else:
-            genGroups = sorted((line for line in outputlines(f) if not line.endswith(suffixignore)),key=lambda x:x.split("-")[:-1])
+        genGroups = sorted((line for line in outputlines(f)),key=lambda x:x.split("-")[:-1])
         for group in genGroups:
             yield group
 
