@@ -19,14 +19,17 @@ def writeXl(f_in=f_in,f_out=f_out,delimiter=delimiter):
     '''
     print("Starting conversion from CSV to xlsx")
     print()
+    
+    # Opening new excel file
     wb = openpyxl.Workbook()
     ws = wb.active
 
     with open(f_in) as f:
+        # Create the excel from csv
         reader = csv.reader(f, delimiter=delimiter)
         for row in reader:
             ws.append(row)
-    
+        # Set the column widths
         dims = {}
         for row in ws.rows:
             for cell in row:
@@ -35,6 +38,7 @@ def writeXl(f_in=f_in,f_out=f_out,delimiter=delimiter):
         for col, value in dims.items():
             ws.column_dimensions[col].width = value
     
+    # Saving the file
     wb.save(f_out)
     print("Done")
     print()
