@@ -77,7 +77,7 @@ def readFile(fileName=fileName,suffixignore=suffixignore):
     with open(fileName) as f:
         for l in f:
             line = l.strip("\n").lower()
-            if (line.startswith("#") or len(line)<2) or (suffixignore!="" and line.endswith(suffixignore)):
+            if (line.startswith("#") or len(line)<2) or (suffixignore!="" and line.endswith(suffixignore)) or (suffixignore!="" and line.endswith(suffixignore.lower())):
                 continue
             else:
                 yield line
