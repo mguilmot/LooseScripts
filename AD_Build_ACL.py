@@ -14,7 +14,9 @@ fileName_csv = "c:\\temp\out.csv"                       # Output CSV filename
 fileName_xl = "c:\\temp\\out.xlsx"                      # Output Excel filename
 start_time = time.time()                                # Start time
 suffixignore="-share"                                   # Suffix of AD groups we should ignore
-header_row = ['Group description','Group name']         # Header row for our CSV file
+#header_row = ['Group description','Group name']         # Header row for our CSV file
+header_row = ['Access List','User ID']
+header_row2 = ["Group description","Group name"]
 delimiter = ","                                         # Delimiter for our CSV file
 lstUsers=[]                                             # Placeholder
 dictAllUsers = {}                                       # Placeholder
@@ -109,12 +111,10 @@ def retUserName(user="Administrator"):
     except:
         return ""
 
-def writeCsv(fileName_csv=fileName_csv,delimiter=delimiter,header_row=header_row,folderName=folderName,dictAllUsers=dictAllUsers):
+def writeCsv(fileName_csv=fileName_csv,delimiter=delimiter,header_row=header_row,header_row2=header_row2,folderName=folderName,dictAllUsers=dictAllUsers):
     '''
         Writes the desired information to CSV file.
     '''
-    
-    header_row2 = []
     
     print(printmsg(text="Reading logfiles to generate CSV"))
 
