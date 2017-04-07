@@ -6,6 +6,7 @@
 
 import os, csv, time, random, shutil
 import openpyxl
+from openpyxl.styles import Font, Alignment, Border, Side
 from pyad import *
 
 ### Vars
@@ -178,6 +179,9 @@ def writeXl(fileName_csv=fileName_csv,fileName_xl=fileName_xl,delimiter=delimite
     '''
         Converts our CSV file to XLSX format
     '''
+    
+    numRows = 0
+    
     print(printmsg(text="Converting CSV to XLSX"))
     
     wb = openpyxl.Workbook()
@@ -188,14 +192,40 @@ def writeXl(fileName_csv=fileName_csv,fileName_xl=fileName_xl,delimiter=delimite
         for row in reader:
             ws.append(row)
 
+        # Setting max width
         dims = {}
         for row in ws.rows:
+            numRows += 1
             for cell in row:
                 if cell.value:
                     dims[cell.column] = max((dims.get(cell.column, 0), len(cell.value)))
         for col, value in dims.items():
             ws.column_dimensions[col].width = value
-
+        
+        # Sorting our columns
+        lstCol = list(dims.keys())
+        lstCol.sort(key=lambda item: (len(item),item))
+        
+        # Setting formatting
+        print(printmsg(text="Setting formatting in XLSX"))
+        for colNum,col in enumerate(lstCol):
+            # Running over columns
+            if colNum > 1:
+                # column width = 3
+                ws.column_dimensions[col].width = 3
+            for rowNum in range(numRows):
+                # Running over rows
+                curCell = ws[str(col.upper()) + str(rowNum+1)]
+                curCell.border = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+                if colNum > 1:
+                    # We do not touch the first two columns, borders are already set
+                    if rowNum < 2:
+                        # Formatting should be: vertical text + all border + center
+                        curCell.alignment = Alignment(horizontal='center',text_rotation=90)
+                    else:
+                        # Formatting should be : all borders + center
+                        curCell.alignment = Alignment(horizontal='center')
+                
     wb.save(fileName_xl)
 
     print(printmsg(text="Done. Check " + fileName_xl + " for output."))
@@ -211,9 +241,14 @@ print(printmsg(text="Done."))
 
 # Create dictionary with theire number alphabetically, and add them to our header
 allUsers = sorted(lstUsers)
-for num,user in enumerate(allUsers):
-    dictAllUsers[user]=num
-    header_row.append(user)
+
+# Since we will not add everything we'll need a puppy integer following our list
+puppy = 0
+for user in allUsers:
+    if not user.startswith("="):
+        dictAllUsers[user]=puppy
+        header_row.append(user)
+        puppy += 1
 
 # Writing our output files
 writeCsv()
