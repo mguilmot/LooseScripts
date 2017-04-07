@@ -126,7 +126,9 @@ def writeCsv(fileName_csv=fileName_csv,delimiter=delimiter,header_row=header_row
         writer.writerow(header_row)
         print(printmsg(text="Getting display names."))
         for user in header_row:
-            header_row2.append(retUserName(user))
+            displayName = retUserName(user)
+            if displayName != "":
+                header_row2.append(displayName)
         writer.writerow(header_row2)
         # Reading logfiles 1 by 1
         for fn in retLogFiles():
