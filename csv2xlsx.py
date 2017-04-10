@@ -5,7 +5,7 @@ Uses the openpyxl module : https://openpyxl.readthedocs.io/en/default/
 '''
 
 ### Modules
-import csv, openpyxl
+import time, csv, openpyxl
 
 ### Variables
 f_in = "c:\\temp\\in.csv"           # input file
@@ -37,12 +37,11 @@ def writeXl(f_in=f_in,f_out=f_out,delimiter=delimiter):
                     dims[cell.column] = max((dims.get(cell.column, 0), len(cell.value)))
         for col, value in dims.items():
             ws.column_dimensions[col].width = value
-    
+
     # Saving the file
     wb.save(f_out)
+    wb.close()
     print("Done")
     print()
-
-### Example
-# writeXl(f_in="c:\\temp\\meh.csv",f_out="c:\\temp\\meh.xlsx",delimiter="\t")
+    
 

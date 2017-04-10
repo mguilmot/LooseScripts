@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
     Building access list based on AD groups
     Second version, simplified, working with dictionaries, then build the ACL
@@ -57,12 +58,15 @@ def readFile(fileName=fileName_in,suffixignore=suffixignore):
         Empty lines and lines starting with # are ignored
     '''
     
-    with open(fileName) as f:
+    with open(fileName,"r") as f:
+        print(f)
         for l in f:
             line = l.strip("\n").lower()
+            line.strip()
             if (line.startswith("#") or len(line)<2) or (suffixignore!="" and line.endswith(suffixignore)) or (suffixignore!="" and line.endswith(suffixignore.lower())):
                 continue
             else:
+                print (line)
                 yield line
 
 def retDispName(user="Administrator"):

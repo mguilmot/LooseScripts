@@ -26,7 +26,7 @@
 fileName = "c:\\temp\\in.txt"           # input filename
 fileName_out = "c:\\temp\\uit.txt"      # plain text output filename
 fileName_csv = "c:\\temp\\uit.csv"      # csv output filename
-suffixlength="4"                        # Lenght of the suffix of the AD groups we will check. In our example our suffix is "-Adm" or "-Usr" == 4
+suffixlength=4                          # Lenght of the suffix of the AD groups we will check. In our example our suffix is "-Adm" or "-Usr" == 4
 suffixRO="-Usr"                         # Suffix of the Read Only  AD groups
 suffixRW="-Adm"                         # Suffix of the Read+Write AD groups
 suffixignore="-share"                   # Specific suffixes to ignore : write it lowercase!
@@ -41,12 +41,15 @@ if (os.path.isfile(fileName))==False:
     raise FileExistsError ("Make sure c:\temp\in.txt exists")
 
 ### Helper functions
-def allGroups(fileName=fileName):
+def allGroups(fileName=fileName,suffixignore=suffixignore,suffixlength=suffixlength):
     '''
-    Generator, getting all the AD groups, sorted, returning them 1 by 1
+    Generator, getting all the AD groups, sorted, returning them 1 by 1. Only returning groups if they exist in pairs:
+    Going over our groups once more is faster than getting members from AD for groups we do not need
     '''
     
     print("Reading input file",fileName)
+    
+    dictGroups = {}
     
     def outputlines(f):
         for line in f:
@@ -59,7 +62,16 @@ def allGroups(fileName=fileName):
     with open(fileName) as f:
         genGroups = sorted((line for line in outputlines(f)),key=lambda x:x.split("-")[:-1])
         for group in genGroups:
-            yield group
+            groupShort = group[:-suffixlength]
+            if groupShort in dictGroups:
+                dictGroups[groupShort] += [group]
+            else:
+                dictGroups[groupShort] = [group] 
+            
+    for groupCombo in dictGroups:
+        if len(dictGroups[groupCombo])>1:
+            for group in dictGroups[groupCombo]:
+                yield group
 
 def getMembers(groupName,suffixRO=suffixRO,suffixRW=suffixRW,dictChecked=dictChecked):
     '''
@@ -212,4 +224,4 @@ if fileName_out != "":
     with open(fileName_out,"w") as f:
         f.write(text)
 
-print("--- %s seconds ---" % (time.time() - start_time))
+print("Execution time: --- %s seconds ---" % '{:02.2f}'.format((time.time() - start_time)))
