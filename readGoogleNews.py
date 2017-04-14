@@ -18,7 +18,7 @@ soup = bs4.BeautifulSoup(rss.text,"html.parser")
 items = soup.find_all('item')
 news = ""
 for item in items:
-    text = item.title.text
+    text = item.title.text.split("-")[0]
     url = item.link.text.split("url=")[-1]
     news += "<a href=" + url + ">" + text + "</a><br>\n"
 
